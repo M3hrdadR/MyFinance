@@ -2,6 +2,7 @@ import MetaTrader5 as mt5
 from datetime import datetime
 import pandas as pd
 
+
 def start(path=""):
     """
     Tries to connect to MetaTrader5
@@ -46,7 +47,12 @@ def login(account_number, server="", password=""):
 
 
 def modify_market_watch(symbol_name, enable=True):
-
+    """
+    Adding or removing a symbol of market watch.
+    :param symbol_name: (Str)
+    :param enable: True= adding to MW |False= removing of MW (Boolean)
+    :return: Boolean
+    """
     result = mt5.symbol_select(symbol_name, enable)
     assert result, "Error in modifying Market Watch"
     return result
@@ -58,7 +64,7 @@ def get_symbols(MT5_regex=""):
     https://www.mql5.com/en/docs/integration/python_metatrader5/mt5symbolsget_py
     further information in get_symbol()
     :param MT5_regex: "MT5 Regex"(Str)
-    :return: List of Symbols or Error
+    :return: List of Symbols (List) or Error
     """
     if MT5_regex:
         result = mt5.symbols_get(MT5_regex)
@@ -80,7 +86,7 @@ def get_symbol(symbol_name):
     information about a symbol name, Structure is available here:
     https://www.mql5.com/en/docs/constants/environment_state/marketinfoconstants#enum_symbol_info_string
     :param symbol_name: (Str)
-    :return: information about symbol(dict) or Error
+    :return: information about symbol (Dict) or Error
     """
     result = mt5.symbol_info(symbol_name)
     if result is None:
@@ -94,7 +100,11 @@ def get_symbol(symbol_name):
 
 
 def get_last_tick(symbol_name):
-
+    """
+    getting last thing happened in symbol
+    :param symbol_name: (Str)
+    :return: information of last tick (Dict)  or Error
+    """
     modify_market_watch(symbol_name, enable=True)
     result = mt5.symbol_info_tick(symbol_name)
     if result is None:
@@ -112,4 +122,8 @@ def get_last_tick(symbol_name):
         del dct['volume_real']
         del dct['flags']
     return dct
+
+
 # to place an order, first we should add symbol to market watch
+# A market order is an order to buy or sell a security immediately.
+# A limit order is an order to buy or sell a security at a specific price or better
