@@ -1,5 +1,6 @@
 import MetaTrader5 as mt5
-from datetime import datetime
+import datetime
+from MyFinance.Constants import *
 import pandas as pd
 
 
@@ -123,6 +124,33 @@ def get_last_tick(symbol_name):
         del dct['flags']
     return dct
 
+
+def get_data(symbol_name, time_frame, start, count=None, end_date=None):
+    assert not count or not end_date.year, "You must provide either number of bars " \
+                                                "you want or date you want data up to it."
+    assert count or end_date.year, "You must provide just one of end_date or count."
+
+    if end_date is not None:
+        assert type(end_date) is datetime.datetime or type(end_date) is pd.Timestamp, "Your end_date format is not True."
+        if type(end_date) is pd.Timestamp:
+            try:
+                end_date = pd.to_datetime(end_date, unit='D').to_pydatetime()
+            except:
+                try:
+
+                    end_date = pd.to_datetime(end_date, unit='s').to_pydatetime()
+                    print(end_date)
+                except:
+                    print("Your timestamp doesn't seem to be valid for end_date.")
+                    quit()
+        elif type(end_date) is datetime.datetime:
+            try:
+                end_date = pd.to_datetime(end_date).to_pydatetime()
+            except:
+                print("Your datetime input for end_date doesn't seem to be valid.")
+
+
+    return
 
 # to place an order, first we should add symbol to market watch
 # A market order is an order to buy or sell a security immediately.
