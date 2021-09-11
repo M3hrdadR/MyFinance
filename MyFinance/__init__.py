@@ -126,20 +126,54 @@ def get_last_tick(symbol_name):
 
 
 def get_data(symbol_name, time_frame, start, count=None, end_date=None):
-    assert not count or not end_date.year, "You must provide either number of bars " \
-                                                "you want or date you want data up to it."
-    assert count or end_date.year, "You must provide just one of end_date or count."
+    """
+    getting data for a symbol.
+    ! You are not allowed to use both of "count" and "end_date" arguments.
+
+    :param symbol_name: (Str)
+    :param time_frame: Constant (ex: mt5.TIMEFRAME.D1)
+    :param start: index of a bar you want start from our date (Int, DateTime, Pandas.TimeStamps)
+    :param count: number of bars you want to have (Int)
+    :param end_date: datetime of last data you want (Datetime, Pandas.TimeStamps)
+    :return: requested data (Pandas DataFrame)
+    """
+    assert not count or not end_date, "You must provide either number of bars you want or date you want data up to it."
+    assert count or end_date, "You must provide just one of end_date or count."
+    assert type(start) is datetime.datetime or type(start) is int or type(start) is pd.Timestamp, "Your start type is" \
+                                            " not True, It must one of Pandas.Timestamps or datetime.datetime or Int."
+    date_to = None
+    date_from = None
+    start_position = None
+
+    if type(start) is pd.Timestamp or type(start) is datetime.datetime:
+        if type(start) is pd.Timestamp:
+            try:
+                end_date = pd.to_datetime(start, unit='D').to_pydatetime()
+            except:
+                try:
+                    end_date = pd.to_datetime(start, unit='s').to_pydatetime()
+                except:
+                    print("Your timestamp doesn't seem to be valid for end_date.")
+                    quit()
+        elif type(start) is datetime.datetime:
+            try:
+                end_date = pd.to_datetime(start).to_pydatetime()
+            except:
+                print("Your datetime input for end_date doesn't seem to be valid.")
+                quit()
+        date_from = start
+    elif type(start) is int:
+        start_position = start
 
     if end_date is not None:
-        assert type(end_date) is datetime.datetime or type(end_date) is pd.Timestamp, "Your end_date format is not True."
+        assert type(end_date) is datetime.datetime or type(end_date) is pd.Timestamp, "Your end_date type is not True" \
+                                                        ", It must be either Pandas.Timestamps or datetime.datetime"
         if type(end_date) is pd.Timestamp:
             try:
                 end_date = pd.to_datetime(end_date, unit='D').to_pydatetime()
             except:
                 try:
-
                     end_date = pd.to_datetime(end_date, unit='s').to_pydatetime()
-                    print(end_date)
                 except:
                     print("Your timestamp doesn't seem to be valid for end_date.")
                     quit()
@@ -148,9 +182,30 @@ def get_data(symbol_name, time_frame, start, count=None, end_date=None):
                 end_date = pd.to_datetime(end_date).to_pydatetime()
             except:
                 print("Your datetime input for end_date doesn't seem to be valid.")
+                quit()
+        date_to = end_date
+    result = None
+    if date_from is not None and count is not None:
+        print("ok")
+        result = mt5.copy_rates_from(symbol_name, time_frame, date_from, count)
 
+    elif start_position is not None and count is not None:
+        print("dokay")
+        result = mt5.copy_rates_from_pos(symbol_name, time_frame, start_position, count)
 
-    return
+    elif date_from is not None and date_to is not None:
+        print("sokay")
+        result = mt5.copy_rates_range(symbol_name, time_frame, date_from, date_to)
+    if result is None:
+        error = mt5.last_error()
+        if error[0] != 1:
+            return error
+        else:
+            return result
+    else:
+        result = pd.DataFrame(result)
+        result['time'] = pd.to_datetime(result['time'], unit='s')
+        return result
 
 # to place an order, first we should add symbol to market watch
 # A market order is an order to buy or sell a security immediately.
