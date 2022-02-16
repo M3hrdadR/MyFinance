@@ -1,7 +1,11 @@
 import MetaTrader5 as mt5
 import datetime
-from MyFinance.Constants import *
+from constants import *
 import pandas as pd
+
+
+def find_path(linux_home):
+    return 'Z:' + linux_home.replace('/', '\\') + '\\.wine\\drive_c\\Program Files\\MetaTrader 5\\terminal64.exe'
 
 
 def start(path=""):
@@ -37,7 +41,7 @@ def login(account_number, server="", password=""):
     :return: Boolean
     """
     assert (server == "" and password == "") or (server != "" and password != ""), "You must enter password " \
-                                                     "and server both or do not enter any of them."
+        "and server both or do not enter any of them."
     result = False
     if server and password:
         result = mt5.login(account_number, password=password, server=server)
@@ -140,7 +144,7 @@ def get_data(symbol_name, time_frame, start, count=None, end_date=None):
     assert not count or not end_date, "You must provide either number of bars you want or date you want data up to it."
     assert count or end_date, "You must provide just one of end_date or count."
     assert type(start) is datetime.datetime or type(start) is int or type(start) is pd.Timestamp, "Your start type is" \
-                                            " not True, It must one of Pandas.Timestamps or datetime.datetime or Int."
+        " not True, It must one of Pandas.Timestamps or datetime.datetime or Int."
     date_to = None
     date_from = None
     start_position = None
@@ -167,7 +171,7 @@ def get_data(symbol_name, time_frame, start, count=None, end_date=None):
 
     if end_date is not None:
         assert type(end_date) is datetime.datetime or type(end_date) is pd.Timestamp, "Your end_date type is not True" \
-                                                        ", It must be either Pandas.Timestamps or datetime.datetime"
+            ", It must be either Pandas.Timestamps or datetime.datetime"
         if type(end_date) is pd.Timestamp:
             try:
                 end_date = pd.to_datetime(end_date, unit='D').to_pydatetime()
